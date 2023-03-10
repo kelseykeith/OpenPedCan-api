@@ -142,10 +142,10 @@ echo "CREATE INDEX diff_exp_cgc_pmtl_gene_up_and_down_reg_rank_idx ON ${BULK_EXP
   | gzip --no-name -c >> "$db_dump_out_path"
 
 # CNV tables
-echo "CREATE INDEX cnv_ensg_id_idx ON ${BULK_EXP_SCHEMA}.${BULK_EXP_TPM_HISTOLOGY_TBL} (\"ensembl\");" \
+echo "CREATE INDEX cnv_ensg_id_idx ON ${CNV_SCHEMA}.${CNV_EVIDENCE_SUMMARY_TBL} (\"ensembl\");" \
   | gzip --no-name -c >> "$db_dump_out_path"
   
-echo "CREATE INDEX cnv_efo_id_idx ON ${BULK_EXP_SCHEMA}.${BULK_EXP_DIFF_EXP_TBL} (\"efo_code\");" \
+echo "CREATE INDEX cnv_efo_id_idx ON ${CNV_SCHEMA}.${CNV_EVIDENCE_SUMMARY_TBL} (\"efo_code\");" \
   | gzip --no-name -c >> "$db_dump_out_path"
 
 # To restore from dump, run:

@@ -232,7 +232,7 @@ stopifnot(cnv_evidence_db %>%
 # Output -----------------------------------------------------------------------
 # CSV file
 print("Writing CNV database to CSV.")
-readr::write_tsv(cnv_evidence_db, paste0(output_dir, "/cnv_cnv_evidence_summary.csv"))
+readr::write_csv(cnv_evidence_db, paste0(output_dir, "/cnv_cnv_evidence_summary.csv"))
 
 # Database file
 cat("Create empty CNV database table.\n")
