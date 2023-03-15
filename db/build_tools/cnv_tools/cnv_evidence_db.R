@@ -86,8 +86,10 @@ db_write_table <- function(df, conn, schema_name, table_name, overwrite = FALSE,
     append = append, field.types = field.types, temporary = temporary)
 }
 
+# Define environment -----------------------------------------------------------
 print("Starting CNV evidence database build...")
 
+# get environment variables
 db_r_interface_dir <- file.path(
   get_env_var("DB_HOME_DIR_PATH"), "db/r_interfaces")
 stopifnot(dir.exists(db_r_interface_dir))
@@ -97,6 +99,33 @@ source(file.path(db_r_interface_dir, "connect_db.R"))
 
 db_build_output_dir <- get_env_var("BUILD_OUTPUT_DIR_PATH")
 stopifnot(dir.exists(db_build_output_dir))
+
+# Are genes being downsampled? Get DOWN_SAMPLE_DB_GENES env var:
+# - 0 or unset: do not down sample genes for database
+# - 1: down sample genes for database, for efficient testing.
+# - Other values: error.
+DOWN_SAMPLE_DB_GENES <- Sys.getenv(
+  "DOWN_SAMPLE_DB_GENES", unset = NA_character_, names = FALSE)
+
+stopifnot(is.character(DOWN_SAMPLE_DB_GENES))
+stopifnot(identical(length(DOWN_SAMPLE_DB_GENES), 1L))
+
+if (is.na(DOWN_SAMPLE_DB_GENES)) {
+  # DOWN_SAMPLE_DB_GENES env var is not set. Set to FALSE by default.
+  DOWN_SAMPLE_DB_GENES <- FALSE
+} else if (identical(DOWN_SAMPLE_DB_GENES, "0")) {
+  DOWN_SAMPLE_DB_GENES <- FALSE
+} else if (identical(DOWN_SAMPLE_DB_GENES, "1")) {
+  DOWN_SAMPLE_DB_GENES <- TRUE
+} else {
+  stop(paste(
+    "Unknown DOWN_SAMPLE_DB_GENES environtment variable",
+    DOWN_SAMPLE_DB_GENES))
+}
+# set genes for quick testing; genes were selected when developing CNV API 
+# visualizations to be representative of different levels of CNVs
+test_ensg_ids <- c('ENSG00000101544', 'ENSG00000260596',
+                   'ENSG00000260548', 'ENSG00000134323')
 
 # Input dirs
 opc_analysis_dir <- file.path(
@@ -232,6 +261,17 @@ stopifnot(cnv_evidence_db %>%
 # Output -----------------------------------------------------------------------
 # CSV file
 print("Writing CNV database to CSV.")
+
+if (DOWN_SAMPLE_DB_GENES) {
+  cat("Downsample ", length(test_ensg_ids),
+      " ENSG IDs for quick testing...\n", sep = "")
+
+  cnv_evidence_db <- cnv_evidence_db %>%
+    dplyr::filter(ensembl %in% test_ensg_ids)
+
+  invisible(gc())
+}
+
 readr::write_csv(cnv_evidence_db, paste0(output_dir, "/cnv_cnv_evidence_summary.csv"))
 
 # Database file
