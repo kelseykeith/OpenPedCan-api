@@ -16,17 +16,17 @@ printf "\n\nInitialize database...\n"
 
 # Adapted from postgres docker image
 # shellcheck disable=SC1004
-eval 'pg_createcluster --port=5432 11 "$DB_CLUSTER_NAME" -- \
+eval 'pg_createcluster --port=5432 12 "$DB_CLUSTER_NAME" -- \
   --username="$POSTGRES_USER" --pwfile=<(echo "$POSTGRES_PASSWORD") \
   $POSTGRES_INITDB_ARGS'
 
 echo "host all all all $POSTGRES_HOST_AUTH_METHOD" \
-  >> "/etc/postgresql/11/${DB_CLUSTER_NAME}/pg_hba.conf"
+  >> "/etc/postgresql/12/${DB_CLUSTER_NAME}/pg_hba.conf"
 
 ../init_db_pwfile.sh
 
 # Starting needs database password file.
-pg_ctlcluster 11 "$DB_CLUSTER_NAME" start
+pg_ctlcluster 12 "$DB_CLUSTER_NAME" start
 
 ../init_db.sh
 

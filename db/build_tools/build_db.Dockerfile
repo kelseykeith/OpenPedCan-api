@@ -25,12 +25,12 @@ RUN apt-get update -qq \
     | gpg --dearmor \
     | tee /etc/apt/trusted.gpg.d/apt.postgresql.org.gpg \
     > /dev/null \
-  && echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
-    > /etc/apt/sources.list.d/pgdg.list \
+#  && echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+#    > /etc/apt/sources.list.d/pgdg.list \
   && apt-get update -qq \
   && apt-get install -y --no-install-recommends \
-    postgresql-11 \
-    postgresql-client-11 \
+    postgresql-12 \
+    postgresql-client-12 \
   && rm -rf /var/lib/apt/lists/* \
   # Install R packages.
   && install2.r --error \
