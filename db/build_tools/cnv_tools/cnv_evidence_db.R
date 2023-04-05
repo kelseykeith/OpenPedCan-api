@@ -214,7 +214,7 @@ data.table::fread(paste0(data_dir,
   # OpenPedCan-analysis
   dplyr::group_by(biospecimen_id, ensembl) %>%
   dplyr::slice_head(n = 1) %>%
-  dplyr:: ungroup() %>%
+  dplyr::ungroup() %>%
   dplyr::mutate(status = ifelse(!is.na(status), status,
                          case_when(copy_number == 0 ~ 'deep deletion',
                                    copy_number < ploidy & copy_number != 0 ~ 'loss',
@@ -241,7 +241,7 @@ stopifnot(
 cnv_evidence_db <- cnv %>%
   dplyr::inner_join(independent_specs,
                     by = c('biospecimen_id' = 'Kids_First_Biospecimen_ID')) %>%
-  dplyr::count(ensembl, gene_symbol, cancer_group, status, cohort_level, 
+  dplyr::count(ensembl, gene_symbol, cancer_group, status, cohort, cohort_level, 
                specimen_descriptor, name = 'sample_count') %>%
   dplyr::left_join(efos, by = 'cancer_group') %>%
   dplyr::left_join(ensg_pmtl_hugo, by = c('ensembl' = 'ensg_id', 'gene_symbol'))
@@ -250,7 +250,7 @@ cnv_evidence_db <- cnv %>%
 stopifnot(cnv_evidence_db %>%
             dplyr::filter(dplyr::across(.cols = c('ensembl', 'gene_symbol',
                                                   'cancer_group', 'status', 
-                                                  'cohort_level', 
+                                                  'cohort', 'cohort_level', 
                                                   'specimen_descriptor', 
                                                   'sample_count',
                                                   'efo_code', 'mondo_code'), 
