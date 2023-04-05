@@ -241,7 +241,9 @@ stopifnot(
 cnv_evidence_db <- cnv %>%
   dplyr::inner_join(independent_specs,
                     by = c('biospecimen_id' = 'Kids_First_Biospecimen_ID')) %>%
-  dplyr::count(ensembl, gene_symbol, cancer_group, status, cohort, cohort_level, 
+  dplyr::mutate(cohort = ifelse(cohort_level == 'all_cohorts', 
+                                'All Cohorts', cohort)) %>%
+  dplyr::count(ensembl, gene_symbol, cancer_group, status, cohort, #cohort_level, 
                specimen_descriptor, name = 'sample_count') %>%
   dplyr::left_join(efos, by = 'cancer_group') %>%
   dplyr::left_join(ensg_pmtl_hugo, by = c('ensembl' = 'ensg_id', 'gene_symbol'))
@@ -250,7 +252,7 @@ cnv_evidence_db <- cnv %>%
 stopifnot(cnv_evidence_db %>%
             dplyr::filter(dplyr::across(.cols = c('ensembl', 'gene_symbol',
                                                   'cancer_group', 'status', 
-                                                  'cohort', 'cohort_level', 
+                                                  'cohort', #'cohort_level', 
                                                   'specimen_descriptor', 
                                                   'sample_count',
                                                   'efo_code', 'mondo_code'), 
