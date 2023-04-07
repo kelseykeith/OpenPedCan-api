@@ -187,13 +187,13 @@ stopifnot(c("cancer_group", "efo_code", "mondo_code") %in%
 # Table mapping HUGO gene names to ensembl IDs and also labelling whether the
 # gene is on a list of known relevant pediatric molecular targets (PMTL)
 readr::read_tsv(paste0(data_dir, 
-                         'ensg-hugo-pmtl-mapping.tsv')) -> ensg_pmtl_hugo
+                         'ensg-hugo-pmtl-mapping.tsv')) %>%
+  select(-pmtl) -> ensg_pmtl_hugo
 # check that the correct columns exist
-stopifnot(c("ensg_id", "gene_symbol", "pmtl", "version") %in%
+stopifnot(c("ensg_id", "gene_symbol", "version") %in%
             colnames(ensg_pmtl_hugo))
 # check that all pmtl annotations have the matching version
 stopifnot(identical(
-  is.na(ensg_pmtl_hugo$pmtl),
   is.na(ensg_pmtl_hugo$version)))
 
 
