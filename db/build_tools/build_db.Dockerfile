@@ -18,6 +18,7 @@ RUN apt-get update -qq \
     unixodbc \
     unixodbc-dev \
     odbc-postgresql \
+    lsb-release \
   && rm -rf /var/lib/apt/lists/* \
   # Install postgres 11 from an actively maintained, as of Sep 2021, APT
   # repository https://wiki.postgresql.org/wiki/Apt .
