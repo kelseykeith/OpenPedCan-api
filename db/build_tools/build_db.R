@@ -24,7 +24,7 @@
 all_cohorts_str_id <- "All Cohorts"
 
 # Arbitrarily selected genes for quick testing.
-arbt_db_ensg_ids <- c("ENSG00000213420", "ENSG00000157764", "ENSG00000273032",
+arbt_db_ensg_ids <- c("ENSG00000213420", "ENSG00000157764", "ENSG00000139618",
                       "ENSG00000141510", "ENSG00000171094")
 
 
@@ -52,11 +52,15 @@ get_env_var <- function(env_var_name) {
 }
 
 db_r_interface_dir <- file.path(
-  get_env_var("DB_HOME_DIR_PATH"), "db/r_interfaces")
+  get_env_var("DB_HOME_DIR_PATH"), "db", "r_interfaces")
 stopifnot(dir.exists(db_r_interface_dir))
 
 source(file.path(db_r_interface_dir, "db_env_vars.R"))
 source(file.path(db_r_interface_dir, "connect_db.R"))
+
+opc_data_dir <- file.path(
+  get_env_var("DB_HOME_DIR_PATH"), "OpenPedCan-analysis", "data")
+stopifnot(dir.exists(opc_data_dir))
 
 db_build_output_dir <- get_env_var("BUILD_OUTPUT_DIR_PATH")
 stopifnot(dir.exists(db_build_output_dir))
@@ -110,7 +114,9 @@ cat("Read differential expression data...\n")
 # - Share CSV.
 # - Use EC2 with larger memory.
 diff_exp_df <- readRDS(
-  file.path(db_build_output_dir, "deseq_v10_all.rds"))
+  file.path(
+    opc_data_dir,
+    "gene-counts-rsem-expected_count-collapsed-deseq.rds"))
 
 
 
@@ -310,6 +316,25 @@ get_ind_chunk_list <- function(n_elements, n_chunks) {
 stopifnot(is.data.frame(diff_exp_df))
 stopifnot(is.character(colnames(diff_exp_df)))
 stopifnot(all(!is.na(colnames(diff_exp_df))))
+
+stopifnot(identical(
+  sort(colnames(diff_exp_df)),
+  c("baseMean", "comparisonId", "Dataset", "datasourceId", "datatypeId",
+    "Disease", "Disease_Count", "Disease_MeanTpm",
+    "diseaseFromSourceMappedId", "Gene_symbol",
+    "GTEx_Count", "GTEx_MeanTpm", "GTEx_subgroup",
+    "GTEx_tissue_subgroup_UBERON", "lfcSE", "log2FoldChange", "MONDO",
+    "padj", "PMTL", "pvalue", "stat", "targetFromSourceId")
+))
+
+diff_exp_df <- dplyr::rename(
+  diff_exp_df,
+  Gene_Ensembl_ID = targetFromSourceId,
+  EFO = diseaseFromSourceMappedId,
+  cancer_group = Disease,
+  cohort = Dataset,
+  cancer_group_Count = Disease_Count,
+  cancer_group_MeanTpm = Disease_MeanTpm)
 
 stopifnot(identical(
   sort(colnames(diff_exp_df)),
@@ -648,7 +673,8 @@ tpm_df_ann_cols <- c("Gene_symbol", "PMTL", "Gene_Ensembl_ID")
 # assertion fails, check all code.
 stopifnot(identical(
   sort(names(tpm_data_lists), na.last = TRUE),
-  sort(c("gtex", "prm_rlp_all_cohorts", "prm_rlp_each_cohort"))
+  sort(c("gtex", "prm_rlp_all_cohorts", "prm_rlp_each_cohort",
+         "tcga_prm_rlp_all_cohorts", "tcga_prm_rlp_each_cohort"))
 ))
 
 # Assert tpm_data_lists contents are valid for the following procedures.
@@ -683,6 +709,8 @@ place_holder_res <- purrr::imap_lgl(tpm_data_lists, function(xl, xname) {
 
     stopifnot(identical(
       unique(xl$histology_df$specimen_descriptor), "GTEx Normal"))
+
+    stopifnot(identical(unique(xl$histology_df$cohort), "GTEx"))
   } else {
     stopifnot(identical(sum(is.na(xl$histology_df$EFO)), 0L))
     stopifnot(identical(sum(is.na(xl$histology_df$Disease)), 0L))
@@ -694,6 +722,13 @@ place_holder_res <- purrr::imap_lgl(tpm_data_lists, function(xl, xname) {
       all(unique(xl$histology_df$specimen_descriptor) %in% c("Primary Tumor",
                                                              "Relapse Tumor"))
     )
+
+    if (xname %in% c("tcga_prm_rlp_all_cohorts", "tcga_prm_rlp_each_cohort")) {
+      stopifnot(identical(unique(xl$histology_df$cohort), "TCGA"))
+    } else {
+      stopifnot(!("TCGA" %in% xl$histology_df$cohort))
+    }
+
   }
 
   tpm_df_colnames <- colnames(xl$tpm_df)
@@ -786,6 +821,29 @@ tpm_data_lists$prm_rlp_all_cohorts <- list(
   tpm_df = padg1_tpm_df,
   histology_df = padg1_histology_df
 )
+
+
+# Handle TCGA all-cohorts/combined-cohorts/all_cohorts.
+#
+# TCGA dataset only has one cohort, so there is no cancer_group with >= 2
+# cohorts.
+#
+# TCGA adult cancer_group samples also should not be combined with pediatric
+# samples with the same cancer_group.
+#
+# Therefore, remove tcga_prm_rlp_all_cohorts element. Handle TCGA cohort
+# separately in get_gene_tpm_tbl, to reduce the complexity of database tables
+# and queries. GTEX samples are also handled separately in get_gene_tpm_tbl.
+
+tpm_data_lists <- tpm_data_lists[
+  c("prm_rlp_all_cohorts", "prm_rlp_each_cohort", "gtex",
+    "tcga_prm_rlp_each_cohort")]
+
+stopifnot(identical(
+  unique(tpm_data_lists$tcga_prm_rlp_each_cohort$histology_df$cohort),
+  "TCGA"
+))
+
 
 if (DOWN_SAMPLE_DB_GENES) {
   cat("Downsample ", length(arbt_db_ensg_ids),

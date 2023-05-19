@@ -112,12 +112,12 @@ test_endpoint <- function(endpoint_spec) {
     res_code <- 200L  # nolint: object_usage_linter
 
     if ("efoId" %in% colnames(grp_key_tbl)) {
-      if (grp_key_tbl$efoId == "Orphanet_178") {
+      if (grp_key_tbl$efoId == "EFO_1000177") {
         if (grp_key_tbl$includeTumorDesc %in%
               c("relapseOnly", "primaryAndRelapseInDifferentBoxes")) {
           res_code <- 500L
         }
-      } else if (grp_key_tbl$efoId == "MONDO_0016718") {
+      } else if (grp_key_tbl$efoId == "EFO_0000637") {
         if (grp_key_tbl$includeTumorDesc %in%
               c("relapseOnly", "primaryAndRelapseInDifferentBoxes",
                 "primaryAndRelapseInSameBox")) {
@@ -215,9 +215,9 @@ stopifnot(is.character(base_url))
 stopifnot(identical(length(base_url), 1L))
 
 param_val_list <- list(
-  ensemblId = c("ENSG00000213420", "ENSG00000157764", "ENSG00000273032"),
+  ensemblId = c("ENSG00000213420", "ENSG00000157764", "ENSG00000139618"),
 
-  efoId = c("EFO_0000621", "Orphanet_178", "MONDO_0016718",
+  efoId = c("EFO_0000621", "EFO_1000177", "EFO_0000637",
             "MONDO_0016680", "EFO_1000026"),
 
   yAxisScale = c("linear", "log10"),
@@ -247,6 +247,20 @@ endpoint_spec_list <- list(
     params = c("ensemblId", "efoId", "yAxisScale", "includeTumorDesc")),
 
   list(
+    path = "/tpm/gene-disease-tcga/json",
+    params = c("ensemblId", "efoId", "includeTumorDesc")),
+  list(
+    path = "/tpm/gene-disease-tcga/plot",
+    params = c("ensemblId", "efoId", "yAxisScale", "includeTumorDesc")),
+
+  list(
+    path = "/tpm/gene-disease-tcga-gtex/json",
+    params = c("ensemblId", "efoId", "includeTumorDesc")),
+  list(
+    path = "/tpm/gene-disease-tcga-gtex/plot",
+    params = c("ensemblId", "efoId", "yAxisScale", "includeTumorDesc")),
+
+  list(
     path = "/tpm/gene-all-cancer/json",
     params = c("ensemblId", "includeTumorDesc")),
   list(
@@ -265,6 +279,20 @@ endpoint_spec_list <- list(
     params = c("ensemblId", "includeTumorDesc")),
   list(
     path = "/tpm/gene-all-cancer-gtex/plot",
+    params = c("ensemblId", "yAxisScale", "includeTumorDesc")),
+
+  list(
+    path = "/tpm/gene-all-cancer-tcga/json",
+    params = c("ensemblId", "includeTumorDesc")),
+  list(
+    path = "/tpm/gene-all-cancer-tcga/plot",
+    params = c("ensemblId", "yAxisScale", "includeTumorDesc")),
+
+  list(
+    path = "/tpm/gene-all-cancer-tcga-gtex/json",
+    params = c("ensemblId", "includeTumorDesc")),
+  list(
+    path = "/tpm/gene-all-cancer-tcga-gtex/plot",
     params = c("ensemblId", "yAxisScale", "includeTumorDesc")),
 
   list(

@@ -1,4 +1,4 @@
-FROM postgres:12.14
+FROM postgres:12.13
 
 # hadolint ignore=DL3008
 RUN apt-get update -qq \
