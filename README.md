@@ -2,6 +2,10 @@
 
 [![GitHub Super-Linter](https://github.com/PediatricOpenTargets/OpenPedCan-api/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
+This branch has complete, but not reviewed or merged, code for the copy number variant evidence page view database. See `db/build_tools/cnv_tools/` for the database build code.
+
+---
+
 `OpenPedCan-api` implements OpenPedCan (Open Pediatric Cancers) project public API (application programming interface) to transfer [OpenPedCan-analysis](https://github.com/PediatricOpenTargets/OpenPedCan-analysis) results and plots via HTTP, which is publicly available at <https://openpedcan-api.d3b.io/__docs__/>.
 
 - [1. API endpoint specifications](#1-api-endpoint-specifications)
